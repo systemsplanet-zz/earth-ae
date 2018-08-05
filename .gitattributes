@@ -4,3 +4,4 @@
 *.epak binary
 *.woff2 binary
 *.png binary
+download-data.cmd binary

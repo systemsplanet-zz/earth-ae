@@ -1,4 +1,4 @@
-@REM download-data.cmd [earth.nullschool.net] data file download script
+@REM download-data.cmd [earth.nullschool.net] data file download script 
 @cls
 @REM Run in path containing this script
 @cd /D "%~dp0"
