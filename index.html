@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<!-- Copyright (c) 2018 Cameron Beccario. For a free version of this project, see https://github.com/cambecc/earth -->
+<html lang="en" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
+<head>
+    <meta charset="utf-8"/>
+    <title>earth :: a global map of wind, weather, and ocean conditions</title>
+    <script type="application/ld+json">{
+      "@context": "http://schema.org",
+      "@type": "Map",
+      "name": "earth",
+      "description": "See current wind, weather, ocean, and pollution conditions, as forecast by supercomputers, on an interactive animated map. Updated every three hours.",
+      "author": {
+        "@type": "Person",
+        "name": "Cameron Beccario"
+      },
+      "url": "https://earth.nullschool.net",
+      "sameAs": [
+        "https://www.facebook.com/EarthWindMap",
+        "https://twitter.com/cambecc"
+      ],
+      "image": "https://earth.nullschool.net/sample.png"
+    }</script>
+    <meta name="description"        content="See current wind, weather, ocean, and pollution conditions, as forecast by supercomputers, on an interactive animated map. Updated every three hours."/>
+    <meta property="og:type"        content="website"/>
+    <meta property="og:title"       content="earth :: a global map of wind, weather, and ocean conditions"/>
+    <meta property="og:description" content="See current wind, weather, ocean, and pollution conditions, as forecast by supercomputers, on an interactive animated map. Updated every three hours."/>
+    <meta property="og:url"         content="https://earth.nullschool.net"/>
+    <meta property="og:image"       content="https://earth.nullschool.net/sample.png"/>
+    <meta property="fb:admins"      content="510217216"/>
+
+    <meta name="viewport"           content="initial-scale=0.75, user-scalable=no"/>
+    <meta name="format-detection"   content="telephone=no"/>
+
+    <link rel="shortcut icon" href="/favicon.ico?v2"/>
+    <link rel="apple-touch-icon" sizes="120x120" href="/iphone-icon.png?v2"/>
+    <link rel="apple-touch-icon" sizes="152x152" href="/ipad-icon.png?v2"/>
+
+    <!-- $LANG$ -->
+    <link rel="canonical" href="https://earth.nullschool.net"/>
+    <link rel="alternate" hreflang="en" href="https://earth.nullschool.net"/>
+    <link rel="alternate" hreflang="cs" href="https://earth.nullschool.net/cs/"/>
+    <link rel="alternate" hreflang="fr" href="https://earth.nullschool.net/fr/"/>
+    <link rel="alternate" hreflang="ja" href="https://earth.nullschool.net/jp/"/>
+    <link rel="alternate" hreflang="pt" href="https://earth.nullschool.net/pt/"/>
+    <link rel="alternate" hreflang="ru" href="https://earth.nullschool.net/ru/"/>
+    <link rel="alternate" hreflang="zh-CN" href="https://earth.nullschool.net/zh-cn/"/>
+    <link rel="alternate" hreflang="x-default" href="https://earth.nullschool.net"/>
+
+    <style>
+/**************************************************************************************************
+ * At-Rules
+ **************************************************************************************************/
+
+@font-face {
+    font-family: mplus-2p-light-sub;
+    src: url("/styles/mplus-2p-light-sub.woff2?v3") format("woff2"),
+         url("/styles/mplus-2p-light-sub.woff?v3") format("woff");
+}
+
+@font-face {
+    font-family: NotoSansCJKsc-Light-sub;
+    src: url("/styles/NotoSansCJKsc-Light-sub.woff2?v2") format("woff2"),
+         url("/styles/NotoSansCJKsc-Light-sub.woff?v2") format("woff");
+}
+
+@font-face {
+    font-family: fontawesome-sub;
+    src: url("/styles/fontawesome-sub.woff2?v2") format("woff2"),
+         url("/styles/fontawesome-sub.woff?v2") format("woff");
+}
+
+/**************************************************************************************************
+ * Styling Reset
+ **************************************************************************************************/
+
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, svg, canvas {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 1em;
+    font-weight: normal;
+    /*font: 1em mplus-2p-light-sub,Helvetica,arial,freesans,clean,sans-serif;*/
+    -webkit-font-smoothing: subpixel-antialiased; /* safari disables subpixel antialiasing for some reason */
+}
+
+[lang="zh-CN"] {
+    font-family: NotoSansCJKsc-Light-sub,mplus-2p-light-sub,Helvetica,arial,freesans,clean,sans-serif;
+}
+
+/* $LANG$ */
+[lang="en"], [lang="cs"], [lang="fr"], [lang="ja"], [lang="pt"], [lang="ru"] {
+    font-family: mplus-2p-light-sub,Helvetica,arial,freesans,clean,sans-serif;
+}
+
+.lang-link {  /* use system font for lang list to avoid downloading all the fonts */
+    font-family: sans-serif;
+    font-weight: 300;
+}
+
+@media (max-width: 825px), (max-height: 700px) {
+    html, body, div, span, td, h1, h2, h3, h4, h5, h6, p, a, svg, canvas {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 500px), (max-height: 500px) {
+    html, body, div, span, td, h1, h2, h3, h4, h5, h6, p, a, svg, canvas {
+        font-size: 0.67em;
+    }
+}
+
+/**************************************************************************************************
+ * Page Styling
+ **************************************************************************************************/
+
+body {
+    color: #eeeeee;
+    background: #000005;
+}
+
+#earth h1 {
+    display: inline;
+}
+
+svg {
+    overflow: hidden;  /* Do not let IE draw outside the bounds of the svg element. */
+}
+
+a, .text-button {
+    color: #888888;
+}
+
+.text-button.highlighted, a.highlighted {
+    color: #e2b42e;
+}
+
+.text-button.disabled {
+    color: #444444;
+}
+
+a:hover, a:focus, .no-touch .text-button:hover, .no-touch .text-button:focus, .text-button:active {
+    color: #ffffff;
+    cursor: pointer;
+    transition: color 125ms ease-in;
+    -webkit-transition: color 125ms ease-in;
+}
+
+a.invisible, p.invisible, span.invisible, #sponsor.invisible, #notice.invisible, #details.invisible, #tara-stats.invisible {
+    display: none;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+#warn {
+    font-size: 2.0em;
+    position: absolute;
+    top: 10%;
+    left: 2%;
+}
+
+#display {
+    cursor: default;
+}
+
+#map, #animation, #fastoverlay, #overlay, #foreground, #annotation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    will-change: transform;
+}
+
+#sponsor, #notice {
+    position: absolute;
+    text-align: right;
+    background-color: rgba(0, 0, 5, 0.6);
+    border-radius: 0.5rem/0.5rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    font-size: 1.0rem;
+}
+
+#tara-stats {
+    position: absolute;
+    text-align: left;
+    background-color: rgba(0, 0, 5, 0.6);
+    border-radius: 0.5rem/0.5rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    font-size: 1.5rem;
+}
+
+#settings-wrap {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    position: absolute;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    pointer-events: none;
+}
+
+#settings-wrap.invisible {
+    display: none;
+}
+
+#settings {
+    font-size: 1.5rem;
+    text-align: left;
+    background-color: rgba(0, 0, 5, 0.8);
+    border-radius: 0.5rem/0.5rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    pointer-events: all;
+}
+
+#settings ul {
+    -moz-column-count: 2;
+    -webkit-column-count: 2;
+    column-count: 2;
+    list-style: none;
+    padding: 1em;
+    margin: 0;
+}
+
+#sponsor, #tara-stats {
+    bottom: 3%;
+    right: 2%;
+}
+
+#notice {
+    top: 3%;
+    right: 2%;
+}
+
+#settings-hide {
+    float: right;
+    padding-left: 1em;
+}
+
+#location-close, #sponsor-hide, #notice-hide {
+    padding: 0 0.5em;
+}
+
+#sponsor:hover #sponsor-hide, #notice:hover #notice-hide {
+    display: inline;
+}
+
+#sponsor a, #notice a {
+    text-decoration: none;
+}
+
+#details {
+    position: absolute;
+    bottom: 3%;
+    left: 2%;
+    pointer-events: none;  /* This div is just a container--do not let it interfere with operation of the map. */
+}
+
+#earth {
+    font-size: 2.4rem;
+}
+
+#status, #location p, #menu {
+    font-size: 1.75rem;
+}
+
+#status, #location, #earth {
+    background-color: rgba(0, 0, 5, 0.6);
+    border-radius: 0.5rem/0.5rem;
+    display: table;
+    margin-top: 1rem;
+    padding: 0 1rem 0 1rem;
+    pointer-events: all;
+}
+
+#menu {
+    background-color: rgba(5, 10, 30, 0.85);
+    border-radius: 0.5rem/0.5rem;
+    overflow: hidden;
+    pointer-events: all;
+
+    margin-top: 1rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    opacity: 1;
+    max-height: 34rem;
+    transition: opacity 250ms ease, max-height 250ms ease, margin-top 250ms ease;
+    -webkit-transition: opacity 250ms ease, max-height 250ms ease, margin-top 250ms ease;
+}
+
+#menu.invisible {
+    margin-top: 0;
+    padding: 0 1rem 0 1rem;
+    opacity: 0;
+    max-height: 0;
+    transition: opacity 250ms ease, max-height 250ms ease, margin-top 250ms ease;
+    -webkit-transition: opacity 250ms ease, max-height 250ms ease, margin-top 250ms ease;
+}
+
+#progress, #hd {
+    padding-left: 1rem;
+}
+
+#nav-now {
+    padding-right: 1rem;
+}
+
+#nav-backward, #nav-backward-more, #nav-forward, #nav-forward-more, #option-show-grid, #animate-start {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (max-width: 825px), (max-height: 700px) {
+    /* this is a hack to ensure the menu isn't too wide on my iphone */
+    #nav-backward, #nav-backward-more, #nav-forward, #nav-forward-more, #option-show-grid {
+        padding-left: 0.70rem;
+        padding-right: 0.70rem;
+    }
+}
+
+#show-location {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+#lang, #settings-show {
+    float: right;
+}
+
+.icon {
+    display: inline-block;
+    padding-left: 0.5em;
+    text-decoration: none;
+    font: normal normal normal 14px/1 fontawesome-sub;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.lang-link, .internal-link {
+    text-decoration: none;  /* can do something like: a[href^="http"] */
+}
+
+sup, sub {
+    font-size: 75%;
+    line-height: 1;
+}
+
+/**************************************************************************************************
+ * SVG Element Styling
+ **************************************************************************************************/
+
+.location-mark {
+    stroke: #3aff3a;
+    stroke-width: 2.5;
+    fill: none;
+}
+
+.tara-route {
+    stroke-opacity: 0.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.tara-plan {
+    stroke: #cccccc;
+    stroke-width: 1.5;
+}
+
+.tara-plan-border {
+    stroke: #474747;
+    stroke-width: 3.75;
+}
+
+.tara-track {
+    stroke: #f17a2e;
+    stroke-width: 1.75;
+    stroke-opacity: 1;
+}
+
+.tara-track-old {
+    stroke: #bc6027;
+    stroke-width: 1.75;
+    stroke-opacity: 1;
+}
+
+.tara-track-border {
+    stroke: #48240f;
+    stroke-width: 5.25;
+}
+
+.tara-loc {
+    stroke: #48240f;
+    stroke-width: 1;
+    fill: #f17a2e;
+}
+
+.argo-recent, .argo-operational, .argo-planned, .argo-dead {
+    stroke: #000000;
+    stroke-width: 1;
+}
+
+.argo-recent {
+    fill: #fffc00;
+}
+
+.argo-operational {
+    fill: #74ff6a;
+}
+
+.argo-planned {
+    fill: #fc00ff;
+}
+
+.argo-dead {
+    fill: #ff1700;
+}
+
+/**************************************************************************************************
+ * About Page
+ **************************************************************************************************/
+
+#about {
+    font-size: 1.5rem;
+}
+
+#about h1 {
+    font-size: 2.4rem;
+    text-align: center;
+    padding-top: 2rem;
+}
+
+#about div {
+    clear: both;
+}
+
+#about .blurb {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+#about p.text {
+    padding-top: 2rem;
+    width: 80%;
+    margin: auto;
+}
+
+#about .blurb img {
+    padding-top: 2rem;
+}
+
+#about img {
+    display: block;
+    margin: auto;
+}
+
+#about:first-child {
+    padding-top: 3rem;
+}
+
+#cover {
+    border: 1px solid #eeeeee;
+}
+
+#about .licensing {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+#print {
+    padding: 0 0 30px 0;
+}
+
+#about .center {
+    text-align: center;
+}
+
+#about .pad {
+    visibility: hidden;
+}
+
+#closing {
+    padding-top: 2rem;
+    padding-bottom: 2.5rem;
+}
+
+#about table {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+#about td {
+    vertical-align: top;
+}
+
+#about td.l {
+    width: 50%;
+    text-align: right;
+    padding: 0 0.5em 0 0;
+    border-right: 2px solid #eee;
+}
+
+#about td.lh {
+    width: 40%;
+    text-align: right;
+    padding: 0 0.5em 0 0;
+    border-right: 2px solid #eee;
+}
+
+#about td.r {
+    padding: 0 2em 0 0.5em;
+}
+
+#about p.xlate span {
+    padding: 0 1em 0 1em;
+    white-space: nowrap;
+}
+
+    </style>
+
+    <script>
+    window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+    ga('create', 'UA-44235933-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+    <script async src='https://www.google-analytics.com/analytics.js'></script>
+</head>
+<body>
+
+    <!--[if lte IE 9]><p id="warn">This site requires Internet Explorer 10 or newer.</p><![endif]-->
+
+    <div id="display">
+        <canvas id="map" class="max-screen"></canvas>
+        <canvas id="animation" class="fill-screen"></canvas>
+        <canvas id="fastoverlay"></canvas>
+        <canvas id="overlay" class="fill-screen"></canvas>
+        <canvas id="foreground" class="max-screen"></canvas>
+        <svg id="annotation" class="fill-screen" xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
+    </div>
+
+    <div id="tara-stats" class="invisible"></div>
+
+    <div id="sponsor" class="kiosk invisible">
+        <!--<p><span id="sponsor-hide" class="text-button invisible">✕</span>favorite lang?</p>-->
+        <!--<a id="sponsor-link" href="http://translate.nullschool.net">help translate</a>-->
+        <p><span id="sponsor-hide" class="text-button invisible">✕</span>community</p>
+        <a id="sponsor-link" href="https://www.facebook.com/EarthWindMap">EarthWindMap</a>
+    </div>
+
+    <div id="notice" class="invisible">
+        <p><span id="notice-hide" class="text-button invisible">✕</span><a href="about.html#geos-disclaimer" class="internal-link">important disclaimer</a></p>
+    </div>
+
+    <div id="details">
+        <p id="status"></p>
+        <div id="location">
+            <p>
+                <span id="location-coord" class="location"></span><span id="location-close" class="text-button invisible">✕</span>
+            </p>
+            <p>
+                <span id="location-wind" class="location"></span>
+                <span id="location-wind-units" class="location text-button"></span>
+            </p>
+            <p>
+                <span id="location-value" class="location"></span>
+                <span id="location-value-units" class="location text-button"></span>
+            </p>
+        </div>
+
+        <div id="earth">
+            <h1 id="show-menu" class="text-button" title="show menu" lang="en">earth <span id="menu-ham" aria-hidden="true">≡</span></h1>
+            <span id="progress" class="invisible"></span>
+        </div>
+
+        <div id="menu" class="invisible">
+            <p>Date | <span
+                id="data-date" class="local"></span> <span
+                id="toggle-zone" class="text-button"></span>
+            </p>
+            <p>Data | <span id="data-layer"></span></p>
+            <p><span id="scale-label">Scale | </span><canvas id="scale"></canvas></p>
+            <p>Source | <span id="data-center"></span></p>
+            <p>Control | <span
+                class="text-button" id="nav-now"
+                    title="Current Conditions"
+                >Now
+                </span><span
+                class="noselect"><span
+                    class="text-button" id="nav-backward-more"> « </span> – <span
+                    class="text-button" id="nav-backward"> ‹ </span> – <span
+                    class="text-button" id="nav-forward"> › </span> – <span
+                    class="text-button" id="nav-forward-more"> » </span></span><span
+                class="text-button" id="show-location"
+                    title="Current Position">⊕</span><span
+                class="text-button" id="option-show-grid" title="Toggle Grid"
+                >Grid</span><span
+                class="text-button" id="animate-start"
+                    title="Start/Stop Animation">▷</span><span
+                class="text-button" id="hd"
+                    title="High Definition Mode"
+                >HD</span>
+            </p>
+            <p>Mode | <span
+                class="text-button" id="air-mode">Air</span> – <span
+                class="text-button" id="ocean-mode">Ocean</span> – <span
+                class="text-button" id="chem-mode">Chem</span> – <span
+                class="text-button" id="particulates-mode">Particulates</span> – <span
+                class="text-button" id="space-mode">Space</span><!-- – <span
+                class="text-button" id="argo-mode">Argo</span>-->
+            </p>
+            <p class="wind-mode">Height | <span
+                class="surface text-button" id="surface-level"
+                    title="Surface"
+                >Sfc</span> – <span
+                class="surface text-button" id="isobaric-1000hPa">1000</span> – <span
+                class="surface text-button" id="isobaric-850hPa">850</span> – <span
+                class="surface text-button" id="isobaric-700hPa">700</span> – <span
+                class="surface text-button" id="isobaric-500hPa">500</span> – <span
+                class="surface text-button" id="isobaric-250hPa">250</span> – <span
+                class="surface text-button" id="isobaric-70hPa">70</span> – <span
+                class="surface text-button" id="isobaric-10hPa">10</span> hPa
+            </p>
+            <p class="wind-mode">Overlay | <span
+                class="text-button" id="wind"
+                    title="Wind Speed"
+                >Wind</span> – <span
+                class="text-button" id="temp"
+                    title="Temperature"
+                >Temp</span> – <span
+                class="text-button" id="relative_humidity"
+                    title="Relative Humidity"
+                >RH</span> – <span
+                class="text-button" id="wind_power_density"
+                    title="Instantaneous Wind Power Density"
+                >WPD</span> – <span
+                class="text-button" id="precip_3hr"
+                    title="3-hour Precipitation Accumulation"
+                >3HPA</span><!-- – <span
+                class="text-button" id="hrrrwind"
+                    title="hrrrwind"
+                >hrrrwind</span> – <span
+                class="text-button" id="hrrrtemp"
+                    title="hrrrtemp"
+                >hrrrtemp</span> – <span
+                class="text-button" id="hrrrradar"
+                    title="hrrrradar"
+                >hrrrradar</span>--> – <span
+                class="text-button" id="cape"
+                    title="Convective Available Potential Energy from Surface"
+                >CAPE</span>
+            </p>
+            <p class="wind-mode"><span style="visibility:hidden">Overlay</span> | <span
+                class="text-button" id="total_precipitable_water"
+                    title="Total Precipitable Water"
+                >TPW</span> – <span
+                class="text-button" id="total_cloud_water"
+                    title="Total Cloud Water"
+                >TCW</span> – <span
+                class="text-button" id="mean_sea_level_pressure"
+                    title="Mean Sea Level Pressure"
+                >MSLP</span> – <span
+                class="text-button" id="misery_index"
+                    title="Misery Index"
+                >MI</span> – <span
+                class="text-button" id="off">None</span>
+            </p>
+            <p class="ocean-mode invisible">Animate | <span
+                class="text-button" id="animate-currents"
+                    title="Ocean Currents"
+                >Currents</span> – <span
+                class="text-button" id="animate-waves"
+                    title="Peak Wave Period"
+                >Waves</span>
+            </p>
+            <p class="ocean-mode invisible">Overlay | <span
+                class="text-button" id="currents"
+                    title="Ocean Currents"
+                >Currents</span> – <span
+                class="text-button" id="primary_waves"
+                    title="Peak Wave Period"
+                >Waves</span>
+            </p>
+            <p class="ocean-mode invisible"><span style="visibility:hidden">Overlay</span> | <span
+                class="text-button" id="sea_surface_temp"
+                    title="Sea Surface Temperature"
+                >SST</span> – <span
+                class="text-button" id="sea_surface_temp_anomaly"
+                    title="Sea Surface Temperature Anomaly"
+                >SSTA</span> – <span
+                class="text-button" id="significant_wave_height"
+                    title="Significant Wave Height"
+                >HTSGW</span> – <span
+                class="text-button" id="no-overlay">None</span>
+            </p>
+            <p class="chem-mode invisible">Overlay | <span
+                class="text-button" id="cosc"
+                    title="Carbon Monoxide Surface Concentration"
+                >COsc</span> – <span
+                class="text-button" id="co2sc"
+                    title="Carbon Dioxide Surface Concentration"
+                >CO<sub>2</sub>sc</span><!-- - <span
+                class="text-button" id="co"
+                    title="Carbon Monoxide Surface Concentration"
+                >CO</span> - <span
+                class="text-button" id="o3"
+                    title="Ozone Surface Concentration"
+                >O<sub>3</sub></span> - <span
+                class="text-button" id="no2"
+                    title="Nitrogen Dioxide Surface Concentration"
+                >NO<sub>2</sub></span> - <span
+                class="text-button" id="so2"
+                    title="Sulfur Dioxide Surface Concentration"
+                >SO<sub>2</sub></span>-->
+            </p>
+            <p class="chem-mode invisible"><span style="visibility:hidden">Overlay</span> | <span
+                class="text-button" id="so2smass"
+                    title="Sulfur Dioxide Surface Mass"
+                >SO<sub>2</sub>sm</span>
+            </p>
+            <p class="chem-mode invisible"><span style="visibility:hidden">Overlay</span> |</p>
+            <p class="particulates-mode invisible">Overlay | <span
+                class="text-button" id="duexttau"
+                    title="Dust Extinction (Aerosol Optical Thickness, 550 nm)"
+                >DUex</span> - <span
+                class="text-button" id="pm1"
+                    title="Particulate Matter < 1 µm"
+                >PM<sub>1</sub></span> - <span
+                class="text-button" id="pm25"
+                    title="Particulate Matter < 2.5 µm"
+                >PM<sub>2.5</sub></span> - <span
+                class="text-button" id="pm10"
+                    title="Particulate Matter < 10 µm"
+                >PM<sub>10</sub></span>
+            </p>
+            <p class="particulates-mode invisible"><span style="visibility:hidden">Overlay</span> | <span
+                class="text-button" id="suexttau"
+                    title="Sulfate Extinction (Aerosol Optical Thickness, 550 nm)"
+                >SO<sub>4</sub>ex</span>
+            </p>
+            <p class="particulates-mode invisible"><span style="visibility:hidden">Overlay</span> |</p>
+
+            <p class="space-mode invisible">Overlay | <span
+                class="text-button" id="aurora"
+                    title="Aurora"
+                >Aurora</span>
+            </p>
+            <p class="space-mode invisible"><span style="visibility:hidden">Overlay</span> |</p>
+            <p class="space-mode invisible"><span style="visibility:hidden">Overlay</span> |</p>
+
+<!--
+            <p class="argo-mode">Pressure | <span
+                class="argo-surface text-button" id="dbar-2p5">2.5</span> – <span
+                class="argo-surface text-button" id="dbar-100">100</span> – <span
+                class="argo-surface text-button" id="dbar-200">200</span> – <span
+                class="argo-surface text-button" id="dbar-400">400</span> – <span
+                class="argo-surface text-button" id="dbar-800">800</span> – <span
+                class="argo-surface text-button" id="dbar-1000">1000</span> – <span
+                class="argo-surface text-button" id="dbar-1500">1500</span> dbar
+            </p>
+            <p class="argo-mode invisible">Overlay | <span
+                class="text-button" id="argo_mean_temp" title="">Temp</span> – <span
+                class="text-button" id="argo_temp_anom" title="">Temp Anom</span> – <span
+                class="text-button" id="argo_mean_salinity" title="">Salinity</span> – <span
+                class="text-button" id="argo_salinity_anom" title="">Salinity Anom</span>
+            </p>
+            <p class="argo-mode invisible">Floats | <span
+                class="text-button" id="argo-planned" title="">Planned</span> – <span
+                class="text-button" id="argo-recent" title="">Recent</span> – <span
+                class="text-button" id="argo-operational" title="">Operational</span> – <span
+                class="text-button" id="argo-dead" title="">Dead</span> – <span
+                class="text-button" id="argo-none" title="">None</span>
+            </p>
+-->
+
+            <p>Projection | <span
+                class="proj text-button" id="atlantis"
+                    title="Atlantis">A</span> – <span
+                class="proj text-button" id="conic_equidistant"
+                    title="Conic Equidistant">CE</span> – <span
+                class="proj text-button" id="equirectangular"
+                    title="Equirectangular">E</span> – <span
+                class="proj text-button" id="orthographic"
+                    title="Orthographic">O</span> – <span
+                class="proj text-button" id="patterson"
+                    title="Patterson">P</span> – <span
+                class="proj text-button" id="stereographic"
+                    title="Stereographic">S</span> – <span
+                class="proj text-button" id="waterman"
+                    title="Waterman Butterfly">WB</span> – <span
+                class="proj text-button" id="winkel3"
+                    title="Winkel Tripel">W3</span>
+					<!-- // MAL --> - <span class="proj text-button" id="azimuthal_equidistant" title="Azimuthal Equidistant">AE</span> 
+            </p>
+            <!--<p>免責事項 | 正確な情報を提供するためのものではありません</p>-->
+            <p id="settings-show" class="kiosk">
+                <!-- $LANG$ -->
+                <a class="internal-link invisible" lang="en" data-link="/" href="/">English</a>
+                <a class="internal-link invisible" lang="cs" data-link="/cs/" href="/cs/">Čeština</a>
+                <a class="internal-link invisible" lang="fr" data-link="/fr/" href="/fr/">Français</a>
+                <a class="internal-link invisible" lang="ja" data-link="/jp/" href="/jp/">日本語</a>
+                <a class="internal-link invisible" lang="pt" data-link="/pt/" href="/pt/">Português</a>
+                <a class="internal-link invisible" lang="ru" data-link="/ru/" href="/ru/">Русский</a>
+                <a class="internal-link invisible" lang="zh-CN" data-link="/zh-cn/" href="/zh-cn/">中文 (简体)</a>
+                <span class="text-button icon" title="settings">&#xf013;</span>
+            </p>
+            <p id="links" class="kiosk">
+                <a href="about.html" class="internal-link">about</a>
+                <a href="https://www.facebook.com/EarthWindMap" class="icon" title="Facebook">&#xf230;</a>
+                <a href="https://twitter.com/cambecc" class="icon" title="Twitter">&#xf099;</a>
+                <a href="https://www.youtube.com/channel/UCZyd1nnJuvS-EZvAV-IDtPg" class="icon" title="YouTube">&#xf16a;</a>
+                <a href="https://www.instagram.com/nullschool/" class="icon" title="Instagram">&#xf16d;</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="settings-wrap" class="invisible">
+        <div id="settings">
+            <section>
+                <h2>
+                    Languages
+                    <span id="settings-hide" lang="en" class="text-button">✕</span>
+                </h2>
+                <ul>
+                    <!-- $LANG$ -->
+                    <li><a class="lang-link" lang="en" data-link="/" href="/">English</a></li>
+                    <li><a class="lang-link" lang="cs" data-link="/cs/" href="/cs/">Čeština</a></li>
+                    <li><a class="lang-link" lang="fr" data-link="/fr/" href="/fr/">Français</a></li>
+                    <li><a class="lang-link" lang="ja" data-link="/jp/" href="/jp/">日本語</a></li>
+                    <li><a class="lang-link" lang="pt" data-link="/pt/" href="/pt/">Português</a></li>
+                    <li><a class="lang-link" lang="ru" data-link="/ru/" href="/ru/">Русский</a></li>
+                    <li><a class="lang-link" lang="zh-CN" data-link="/zh-cn/" href="/zh-cn/">中文 (简体)</a></li>
+                </ul>
+            </section>
+        </div>
+    </div>
+
+    <script defer src="./js/bundle.js"></script>
+	    <!-- MAL <script defer src="/js/bundle.js"></script> -->
+</body>
+</html>
+<!--
+
+<CTRL SHIFT I> <CONSOLE TAB>
+  set a breakpoint at "initializing..."
+  <F5>
+  
+  var s=document.createElement('span'); s.setAttribute("class","proj text-button"); s.setAttribute("id","azimuthal_equidistant"); s.append(" - AE"); 
+  document.querySelector("#winkel3").parentNode.insertBefore(s, document.querySelector("#winkel3").nextSibling); 
+  s=document.createElement('script'); s.setAttribute("src","/js/bundle.js"); document.body.appendChild(s);
+
+<SOURCE TAB> <CTRL-F> builder = _globes__WEBPACK_IMPORTED_MODULE_8_ <ENTER>
+<Set breakpoint> <CLICK MENU ITEM ON GLOBE>
+_globes__WEBPACK_IMPORTED_MODULE_8__["azimuthal_equidistant"]=function azimuthalEquidistant(view) { return newGlobe({ newProjection: function() { return fitProjection(_d3__WEBPACK_IMPORTED_MODULE_2__["geoAzimuthalEquidistant"]().precision(0.1).rotate([0, -90]), view); 	} 	}); } 
+
+
+
+
+-->
