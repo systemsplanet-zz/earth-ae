@@ -4,11 +4,11 @@ Earth with a **satisfyingly flat** Azimuthal Equidistant projection.
 
 AE presents a clear and obvious explanation for world-wide weather patterns.
 
-Based on [earth.nullschool.net](https://earth.nullschool.net/)  [github](https://github.com/cambecc/earth) which for [unknown reasons](https://www.youtube.com/watch?v=6gF9yIcspdE) disabled its AE view.
+Based on [earth.nullschool.net](https://earth.nullschool.net/)  [github](https://github.com/cambecc/earth) for [unknown reasons](https://www.youtube.com/watch?v=6gF9yIcspdE) disabled its AE view.
 
 **Teslas Apple version with AE (NEW)**
 - [video](https://www.youtube.com/watch?v=G06GhPU8iiQ)
-- [site](http://www.teslasapple.com/earth.html)
+- [site](http://www.teslasapple.com/eaRth.numbskull.extra.html#current/wind/isobaric/250hPa/azimuthal_equidistant)
 
 # DETAILS
 
